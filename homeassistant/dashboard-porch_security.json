@@ -1,0 +1,559 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace.porch_security",
+  "data": {
+    "config": {
+      "title": "Porch & Security",
+      "views": [
+        {
+          "title": "Porch",
+          "path": "porch",
+          "icon": "mdi:cctv",
+          "type": "sections",
+          "max_columns": 3,
+          "badges": [
+            {
+              "type": "entity",
+              "entity": "binary_sensor.porch_camera_frigate",
+              "name": "Frigate",
+              "show_name": true
+            },
+            {
+              "type": "entity",
+              "entity": "switch.porch_camera_camera",
+              "name": "Camera",
+              "show_name": true
+            },
+            {
+              "type": "entity",
+              "entity": "binary_sensor.rpi_power_status",
+              "name": "Power",
+              "show_name": true
+            }
+          ],
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Live",
+                  "heading_style": "title",
+                  "icon": "mdi:cctv"
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "off"
+                    }
+                  ],
+                  "card": {
+                    "type": "markdown",
+                    "content": "## 🔒 Privacy mode\nThe camera is **off**: nothing is streamed, detected or recorded.\nTurn **Camera** back on below to resume."
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "picture-entity",
+                    "entity": "camera.porch_live",
+                    "camera_view": "live",
+                    "show_name": false,
+                    "show_state": false
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "binary_sensor.porch_camera_person",
+                    "name": "Person now"
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "binary_sensor.porch_camera_motion",
+                    "name": "Motion now"
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "counter.porch_people_today",
+                    "name": "People today"
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "sensor.porch_camera_people_in_view",
+                    "name": "In view now"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Last person",
+                  "heading_style": "title",
+                  "icon": "mdi:account-alert"
+                },
+                {
+                  "type": "picture-entity",
+                  "entity": "camera.porch_camera_last_person",
+                  "show_name": false,
+                  "show_state": false,
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "button",
+                  "name": "Recordings & timeline",
+                  "icon": "mdi:filmstrip-box-multiple",
+                  "show_state": false,
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/hassio/ingress/ccab4aaf_frigate"
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Privacy & recording",
+                  "heading_style": "title",
+                  "icon": "mdi:shield-account"
+                },
+                {
+                  "type": "tile",
+                  "entity": "switch.porch_camera_camera",
+                  "name": "Camera (off = privacy)",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "switch.porch_camera_person_detection",
+                    "name": "Detection",
+                    "tap_action": {
+                      "action": "toggle"
+                    }
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "switch.porch_camera_recording",
+                    "name": "Recording",
+                    "tap_action": {
+                      "action": "toggle"
+                    }
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "switch.porch_camera_snapshots",
+                    "name": "Snapshots",
+                    "tap_action": {
+                      "action": "toggle"
+                    }
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "switch.porch_camera_alerts",
+                    "name": "Frigate alerts",
+                    "tap_action": {
+                      "action": "toggle"
+                    }
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "automation.porch_person_notification",
+                  "name": "Phone alerts",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Remote help",
+                  "heading_style": "title",
+                  "icon": "mdi:console-network"
+                },
+                {
+                  "type": "tile",
+                  "entity": "switch.advanced_ssh_web_terminal",
+                  "name": "SSH access",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "markdown",
+                  "content": "Turn **on** only while Claude is helping, **off** when done. Reachable from home Wi-Fi only (key login, no password).",
+                  "grid_options": {
+                    "columns": 12
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "System",
+          "path": "system",
+          "icon": "mdi:raspberry-pi",
+          "type": "sections",
+          "max_columns": 3,
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Raspberry Pi",
+                  "heading_style": "title",
+                  "icon": "mdi:raspberry-pi"
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.system_monitor_processor_use",
+                  "name": "CPU",
+                  "min": 0,
+                  "max": 100,
+                  "needle": true,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 60,
+                    "red": 85
+                  },
+                  "grid_options": {
+                    "columns": 6
+                  }
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.system_monitor_processor_temperature",
+                  "name": "Temperature",
+                  "min": 0,
+                  "max": 90,
+                  "needle": true,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 70,
+                    "red": 80
+                  },
+                  "grid_options": {
+                    "columns": 6
+                  }
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.system_monitor_memory_usage",
+                  "name": "Memory",
+                  "min": 0,
+                  "max": 100,
+                  "needle": true,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 75,
+                    "red": 90
+                  },
+                  "grid_options": {
+                    "columns": 6
+                  }
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.system_monitor_disk_usage_media",
+                  "name": "SSD",
+                  "min": 0,
+                  "max": 100,
+                  "needle": true,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 75,
+                    "red": 90
+                  },
+                  "grid_options": {
+                    "columns": 6
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.rpi_power_status",
+                  "name": "Power supply problem"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.system_monitor_pwmfan_fan_speed",
+                  "name": "Fan"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.system_monitor_uptime",
+                  "name": "Running since",
+                  "grid_options": {
+                    "columns": 12
+                  }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Camera system",
+                  "heading_style": "title",
+                  "icon": "mdi:cctv"
+                },
+                {
+                  "type": "tile",
+                  "entity": "binary_sensor.porch_camera_frigate",
+                  "name": "Frigate"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.porch_camera_camera_connection",
+                  "name": "Camera link"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.porch_camera_camera_fps",
+                  "name": "Frame rate"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.porch_camera_detection_speed",
+                  "name": "Detection time"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.porch_camera_frigate_cpu",
+                  "name": "Frigate CPU"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.porch_camera_recording_space_free",
+                  "name": "Space free"
+                },
+                {
+                  "type": "tile",
+                  "entity": "sensor.porch_camera_recording_space_used",
+                  "name": "Space used",
+                  "grid_options": {
+                    "columns": 12
+                  }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Security",
+                  "heading_style": "title",
+                  "icon": "mdi:shield-lock"
+                },
+                {
+                  "type": "tile",
+                  "entity": "automation.security_failed_login_or_ip_ban",
+                  "name": "Failed-login alerts",
+                  "tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "automation.security_system_update_available",
+                  "name": "Update alerts",
+                  "tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "automation.porch_person_notification",
+                  "name": "Person alerts",
+                  "tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "automation.porch_count_people_today",
+                  "name": "People counter",
+                  "tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "automation.security_ssh_auto_off_after_2_hours",
+                  "name": "SSH auto-off (2 h)",
+                  "tap_action": {
+                    "action": "toggle"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "heading": "Updates",
+                  "heading_style": "title",
+                  "icon": "mdi:update"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_core_update",
+                  "name": "Home Assistant"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_operating_system_update",
+                  "name": "Operating system"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.raspberry_pi_5_firmware",
+                  "name": "Pi firmware"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.home_assistant_supervisor_update",
+                  "name": "Supervisor"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.frigate_update",
+                  "name": "Frigate"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.wireguard_update",
+                  "name": "WireGuard"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.mosquitto_broker_update",
+                  "name": "Mosquitto"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

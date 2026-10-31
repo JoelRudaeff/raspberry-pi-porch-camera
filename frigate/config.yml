@@ -1,0 +1,90 @@
+# Frigate - porch camera (USB webcam on Raspberry Pi 5, Home Assistant OS)
+# Tuned for low power: 720p @ 10 fps capture, detection at 640x360 @ 5 fps on the CPU,
+# person-only tracking, recordings kept only around detections.
+
+# Local Mosquitto add-on; Home Assistant listens here for person alerts.
+# The password placeholder is filled in on the Pi from /addon_configs/ccab4aaf_frigate/.mqtt_password
+mqtt:
+  enabled: true
+  host: core-mosquitto
+  port: 1883
+  user: frigate
+  password: "{FRIGATE_MQTT_PASSWORD}"
+
+# No calls home to GitHub for update checks
+telemetry:
+  version_check: false
+
+detectors:
+  cpu:
+    type: cpu
+    num_threads: 2
+
+go2rtc:
+  # go2rtc's H.264 encoder template, with a keyframe every 2 s (20 frames at 10 fps) instead of 5 s
+  ffmpeg:
+    h264: "-c:v libx264 -g 20 -profile:v high -level:v 4.1 -preset:v superfast -tune:v zerolatency -pix_fmt:v yuv420p"
+  # Advertise the Pi's LAN address for WebRTC live view, so the iPhone can reach it over
+  # the VPN. No public STUN server: nothing leaves the home network.
+  webrtc:
+    candidates:
+      - <PI_LAN_IP>:8555
+  streams:
+    # The webcam outputs MJPEG; go2rtc encodes it to H.264 once, and everything else
+    # (Frigate detection, recording, live view on the iPhone) reuses that stream.
+    porch:
+      # Capped at ~1.5 Mbps with a keyframe every 2 s, so live view starts and recovers quickly
+      # on a phone over cellular.
+      - "ffmpeg:device?video=/dev/video0&input_format=mjpeg&video_size=1280x720&framerate=10#video=h264#raw=-b:v 1500k -maxrate 1500k -bufsize 3000k"
+
+cameras:
+  porch:
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/porch
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 5
+    objects:
+      track:
+        - person
+      # Webcam behind glass scores people lower than a real CCTV camera; Frigate's default
+      # threshold (0.7) missed real walk-bys. Lowered to 0.5 at the user's request:
+      # more sensitive, with a higher chance of false alerts.
+      filters:
+        person:
+          min_score: 0.45
+          threshold: 0.5
+    # Snapshot sent over MQTT for the iPhone notification picture
+    mqtt:
+      enabled: true
+      timestamp: false
+      bounding_box: true
+      crop: false
+      height: 360
+    snapshots:
+      enabled: true
+      retain:
+        default: 60
+    record:
+      enabled: true
+      continuous:
+        days: 0
+      motion:
+        days: 0
+      alerts:
+        pre_capture: 5
+        post_capture: 10
+        retain:
+          days: 60
+      detections:
+        retain:
+          days: 60
+
+version: 0.18-0

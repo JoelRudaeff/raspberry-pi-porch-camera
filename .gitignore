@@ -1,0 +1,6 @@
+*.db
+*.db-*
+secrets.yaml
+.mqtt_password
+.jwt_secret
+.storage/auth*

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "counter",
+  "data": {
+    "items": [
+      {
+        "id": "porch_people_today",
+        "name": "Porch people today",
+        "icon": "mdi:account-group",
+        "initial": 0,
+        "step": 1,
+        "minimum": 0,
+        "restore": true,
+        "maximum": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,140 @@
+- id: porch_person_notification
+  alias: 'Porch: person notification'
+  description: When Frigate raises a person alert on the porch camera, send the iPhone
+    a notification with the snapshot. At most one notification per minute.
+  triggers:
+  - trigger: mqtt
+    topic: frigate/reviews
+  conditions:
+  - condition: template
+    value_template: '{{ trigger.payload_json.type == ''new'' and trigger.payload_json.after.camera
+      == ''porch'' and trigger.payload_json.after.severity == ''alert'' and ''person''
+      in trigger.payload_json.after.data.objects }}'
+  actions:
+  - delay:
+      seconds: 2
+  - action: notify.mobile_app_YOUR_PHONE
+    data:
+      title: Porch
+      message: Person at the porch ({{ now().strftime('%H:%M') }})
+      data:
+        image: /api/camera_proxy/camera.porch_camera_last_person
+        url: /hassio/ingress/ccab4aaf_frigate
+        group: frigate-porch
+        push:
+          interruption-level: time-sensitive
+  - delay:
+      seconds: 60
+  mode: single
+  max_exceeded: silent
+- id: security_failed_login
+  alias: 'Security: failed login or IP ban'
+  description: Push an alert to the iPhone whenever Home Assistant records a failed
+    login or bans an IP address.
+  triggers:
+  - trigger: persistent_notification
+    update_type:
+    - added
+    - updated
+    notification_id: http-login
+  - trigger: persistent_notification
+    update_type:
+    - added
+    - updated
+    notification_id: ip-ban
+  actions:
+  - action: notify.mobile_app_YOUR_PHONE
+    data:
+      title: '{{ ''Home Assistant: IP banned'' if trigger.notification.notification_id
+        == ''ip-ban'' else ''Home Assistant: failed login'' }}'
+      message: '{{ trigger.notification.message | striptags | truncate(200) }}'
+      data:
+        group: security
+        push:
+          interruption-level: time-sensitive
+  mode: queued
+- id: security_update_available
+  alias: 'Security: system update available'
+  description: Notify the iPhone when a Home Assistant Core, OS or Supervisor update
+    is available, so it can be reviewed and installed.
+  triggers:
+  - trigger: state
+    entity_id:
+    - update.home_assistant_core_update
+    - update.home_assistant_operating_system_update
+    - update.home_assistant_supervisor_update
+    - update.raspberry_pi_5_firmware
+    to: 'on'
+  actions:
+  - action: notify.mobile_app_YOUR_PHONE
+    data:
+      title: Update available
+      message: '{{ state_attr(trigger.entity_id, ''title'') or trigger.to_state.name
+        }}: {{ state_attr(trigger.entity_id, ''installed_version'') }} → {{ state_attr(trigger.entity_id,
+        ''latest_version'') }}'
+      data:
+        group: security
+        url: /config/updates
+  mode: queued
+- id: porch_people_counter
+  alias: 'Porch: count people today'
+  description: Counts person alerts on the porch camera; resets at midnight.
+  triggers:
+  - trigger: mqtt
+    topic: frigate/reviews
+    id: review
+  - trigger: time
+    at: 00:00:00
+    id: midnight
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: midnight
+      sequence:
+      - action: counter.reset
+        target:
+          entity_id: counter.porch_people_today
+    - conditions:
+      - condition: trigger
+        id: review
+      - condition: template
+        value_template: '{{ trigger.payload_json.type == ''new'' and trigger.payload_json.after.camera
+          == ''porch'' and trigger.payload_json.after.severity == ''alert'' and ''person''
+          in trigger.payload_json.after.data.objects }}'
+      sequence:
+      - action: counter.increment
+        target:
+          entity_id: counter.porch_people_today
+  mode: queued
+- id: ssh_auto_off
+  alias: 'Security: SSH auto-off after 2 hours'
+  description: Turns the SSH add-on off once it has been on for 2 hours, and tells
+    the iPhone. The 15-minute check also catches the case where Home Assistant restarted
+    while SSH was on.
+  triggers:
+  - trigger: state
+    entity_id: switch.advanced_ssh_web_terminal
+    to: 'on'
+    for:
+      hours: 2
+  - trigger: time_pattern
+    minutes: /15
+  conditions:
+  - condition: state
+    entity_id: switch.advanced_ssh_web_terminal
+    state: 'on'
+  - condition: template
+    value_template: '{{ now() - states.switch.advanced_ssh_web_terminal.last_changed
+      >= timedelta(hours=2) }}'
+  actions:
+  - action: switch.turn_off
+    target:
+      entity_id: switch.advanced_ssh_web_terminal
+  - action: notify.mobile_app_YOUR_PHONE
+    data:
+      title: SSH access turned off
+      message: SSH was on for 2 hours, so it was switched off automatically.
+      data:
+        group: security
+  mode: single
