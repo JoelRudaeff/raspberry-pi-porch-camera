@@ -13,6 +13,7 @@ Personal values are replaced with placeholders: `{FRIGATE_MQTT_PASSWORD}`, `<PI_
 | `homeassistant/dashboard-porch_security.json` | The "Porch & Security" dashboard: live view, last person, counters, system health (CPU, temperature, fan, disk, power status), toggles for detection/recording/alerts, update status, SSH switch. |
 | `homeassistant/counter.json` | The `porch_people_today` counter helper. |
 | `homeassistant/dashboards-registry.json` | Dashboard registration (storage mode). |
+| `docs/remote-access.md`, `wireguard/addon-options.example.yaml` | VPN, dynamic DNS, port forwarding and HA hardening, with placeholders. |
 | `homeassistant/configuration.yaml` | Stock config plus includes. |
 
 ## Hardening
@@ -22,7 +23,7 @@ Personal values are replaced with placeholders: `{FRIGATE_MQTT_PASSWORD}`, `<PI_
 - The SSH add-on is **off by default**; a switch on the dashboard turns it on, and an automation turns it off again after 2 hours (checked every 15 min so a restart cannot leave it open).
 - Frigate telemetry/version check off; no public STUN server for WebRTC, so nothing leaves the LAN.
 - MQTT is the local Mosquitto add-on with a dedicated `frigate` user.
-- Remote viewing goes through the WireGuard add-on (VPN), not a port-forwarded dashboard.
+- Remote viewing goes through a WireGuard VPN limited to the Pi, with one UDP port forward. The dashboard itself is never exposed. See [docs/remote-access.md](docs/remote-access.md).
 
 ## Setup
 
