@@ -179,6 +179,142 @@
               "cards": [
                 {
                   "type": "heading",
+                  "heading": "Pigeons",
+                  "heading_style": "title",
+                  "icon": "mdi:bird"
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "binary_sensor.porch_camera_pigeon",
+                    "name": "Pigeon now"
+                  }
+                },
+                {
+                  "type": "conditional",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "switch.porch_camera_camera",
+                      "state": "on"
+                    }
+                  ],
+                  "card": {
+                    "type": "tile",
+                    "entity": "counter.pigeon_visits_today",
+                    "name": "Pigeon visits today"
+                  }
+                },
+                {
+                  "type": "picture-entity",
+                  "entity": "camera.porch_camera_last_pigeon",
+                  "name": "Last pigeon",
+                  "show_name": true,
+                  "show_state": false,
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "input_boolean.pigeon_scare_sound",
+                  "name": "Scare-off sound",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "input_datetime.pigeon_sound_from",
+                  "name": "Sound from"
+                },
+                {
+                  "type": "tile",
+                  "entity": "input_datetime.pigeon_sound_until",
+                  "name": "Sound until"
+                },
+                {
+                  "type": "tile",
+                  "entity": "input_number.pigeon_sound_volume",
+                  "name": "Volume",
+                  "features": [
+                    {
+                      "type": "numeric-input",
+                      "style": "slider"
+                    }
+                  ],
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "tile",
+                  "entity": "script.play_pigeon_scare_sound",
+                  "name": "Test sound",
+                  "icon": "mdi:play",
+                  "show_entity_picture": false,
+                  "hide_state": true,
+                  "tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "script.play_pigeon_scare_sound"
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "history-graph",
+                  "title": "Pigeon timeline (24 h)",
+                  "hours_to_show": 24,
+                  "entities": [
+                    {
+                      "entity": "binary_sensor.porch_camera_pigeon",
+                      "name": "Pigeon"
+                    }
+                  ],
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "logbook",
+                  "title": "Pigeon log",
+                  "hours_to_show": 48,
+                  "target": {
+                    "entity_id": [
+                      "binary_sensor.porch_camera_pigeon",
+                      "script.play_pigeon_scare_sound"
+                    ]
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
+                  "type": "markdown",
+                  "grid_options": {
+                    "columns": 12
+                  },
+                  "content": "**Scare-off sound**: when a pigeon shows up between *Sound from* and *Sound until*, the Pi's speaker plays a quiet bird-of-prey call, then again every minute while it stays (at most 3 times). Pigeon clips are under **Detections** in *Recordings & timeline* (kept 14 days); people stay under **Alerts**."
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
                   "heading": "Privacy & recording",
                   "heading_style": "title",
                   "icon": "mdi:shield-account"
@@ -284,7 +420,7 @@
               "cards": [
                 {
                   "type": "heading",
-                  "heading": "Remote help",
+                  "heading": "Remote access",
                   "heading_style": "title",
                   "icon": "mdi:console-network"
                 },
@@ -300,8 +436,19 @@
                   }
                 },
                 {
+                  "type": "tile",
+                  "entity": "input_boolean.remote_desktop_over_vpn",
+                  "name": "Remote Desktop over VPN",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "grid_options": {
+                    "columns": 12
+                  }
+                },
+                {
                   "type": "markdown",
-                  "content": "Turn **on** only while Claude is helping, **off** when done. Reachable from home Wi-Fi only (key login, no password).",
+                  "content": "**SSH access**: turn on only while Claude is helping (auto-off after 2 h).\n\n**Remote Desktop over VPN**: lets the iPhone (on the VPN) open the PC with Windows App. Turning it on or off restarts the VPN for a few seconds.",
                   "grid_options": {
                     "columns": 12
                   }
@@ -548,6 +695,11 @@
                   "type": "tile",
                   "entity": "update.mosquitto_broker_update",
                   "name": "Mosquitto"
+                },
+                {
+                  "type": "tile",
+                  "entity": "update.duck_dns_update",
+                  "name": "Duck DNS"
                 }
               ]
             }

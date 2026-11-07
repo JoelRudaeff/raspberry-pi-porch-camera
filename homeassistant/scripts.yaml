@@ -1,0 +1,19 @@
+play_pigeon_scare_sound:
+  alias: Play pigeon scare sound
+  description: Plays one of three bird-of-prey calls on the Pi's USB speaker at the
+    dashboard volume.
+  icon: mdi:bullhorn
+  mode: single
+  sequence:
+  - action: media_player.volume_set
+    target:
+      entity_id: media_player.vlc_telnet
+    data:
+      volume_level: '{{ states(''input_number.pigeon_sound_volume'') | float(30) /
+        200 }}'
+  - action: media_player.play_media
+    target:
+      entity_id: media_player.vlc_telnet
+    data:
+      media_content_type: music
+      media_content_id: file:///media/pigeon/scare_{{ range(1, 4) | random }}.wav

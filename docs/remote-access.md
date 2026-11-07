@@ -60,6 +60,35 @@ See [`wireguard/addon-options.example.yaml`](../wireguard/addon-options.example.
 - Key-only login, **protection mode stays on**, reachable from the home LAN only (the VPN firewall drops port 22).
 - A dashboard switch starts and stops it, and an automation turns it off after 2 hours and notifies the phone (see `automations.yaml`).
 
+## 6. Remote Desktop to a home PC (optional)
+
+Reach a Windows PC on the LAN from the phone or a laptop. This only works over the VPN, and only while a dashboard switch is on.
+
+```
+VPN client ──► Pi (WireGuard) ──► <PC_LAN_IP>:3389   only while "Remote Desktop over VPN" is on
+                 NAT: the PC sees every VPN connection as coming from <PI_LAN_IP>
+```
+
+Two independent locks:
+
+1. **Pi side.** `input_boolean.remote_desktop_over_vpn` triggers the automation *Remote access: RDP over VPN*, which runs `shell_command.rdp_vpn`, which runs [`homeassistant/rdp_vpn/rdp_vpn.py`](../homeassistant/rdp_vpn/rdp_vpn.py).
+   - The script rewrites the WireGuard add-on's `post_up`/`post_down` through the Supervisor API, adding or removing the TCP/UDP 3389 rule to the PC. It then restarts the add-on, so the VPN drops for a few seconds. The phone gets a notification.
+   - Change the firewall in this script, not by hand in the add-on options.
+2. **PC side.** [`windows/enable-rdp-via-pi.ps1`](../windows/enable-rdp-via-pi.ps1), run as admin, turns on Remote Desktop with Network Level Authentication.
+   - It limits the two "User Mode" firewall rules to `RemoteAddress <PI_LAN_IP>` and keeps the Shadow rule off.
+   - RDP is therefore unreachable from any other LAN device.
+
+Client side:
+
+- Add `<PC_LAN_IP>/32` to the client's `AllowedIPs`.
+- Give the PC a DHCP reservation on the router.
+- Keep the PC from sleeping.
+
+**Microsoft-account sign-in:** if Windows uses a Microsoft account and *"Only allow Windows Hello sign-in for Microsoft accounts on this device"* is on, RDP rejects the password.
+
+- Turn that setting off, then sign in once locally with the account password.
+- After that, connect as `MicrosoftAccount\you@example.com` with the account password, not the PIN.
+
 ## What is deliberately not in this repo
 
 WireGuard private/preshared keys and QR codes, the Duck DNS token and hostname, the public IP, the port number, the CA and server private keys, the MQTT password, the HA auth and secrets files, and the databases.

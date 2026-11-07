@@ -138,3 +138,107 @@
       data:
         group: security
   mode: single
+- id: rdp_over_vpn
+  alias: 'Remote access: RDP over VPN'
+  description: Opens or closes port 3389 to the PC (<PC_LAN_IP>) for WireGuard VPN
+    clients when the dashboard toggle changes, and re-applies the setting after a
+    Home Assistant restart. The PC's own firewall only accepts RDP from the Pi.
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.remote_desktop_over_vpn
+    to:
+    - 'on'
+    - 'off'
+    id: toggle
+  - trigger: homeassistant
+    event: start
+    id: start
+  actions:
+  - action: shell_command.rdp_vpn
+    data:
+      state: '{{ states(''input_boolean.remote_desktop_over_vpn'') }}'
+    response_variable: result
+  - if:
+    - condition: trigger
+      id: toggle
+    then:
+    - action: notify.mobile_app_YOUR_PHONE
+      data:
+        title: Remote Desktop over VPN {{ 'ON' if is_state('input_boolean.remote_desktop_over_vpn',
+          'on') else 'OFF' }}
+        message: '{{ ''VPN clients can now reach the PC on port 3389.'' if is_state(''input_boolean.remote_desktop_over_vpn'',
+          ''on'') else ''RDP to the PC is closed for VPN clients.'' }} (exit {{ result.returncode
+          }})'
+        data:
+          group: security
+  mode: queued
+- id: pigeon_visits_counter
+  alias: 'Pigeons: count visits today'
+  description: Counts porch review items that contain a pigeon (Frigate label 'bird');
+    resets at midnight.
+  triggers:
+  - trigger: mqtt
+    topic: frigate/reviews
+    id: review
+  - trigger: time
+    at: 00:00:00
+    id: midnight
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: midnight
+      sequence:
+      - action: counter.reset
+        target:
+          entity_id: counter.pigeon_visits_today
+    - conditions:
+      - condition: trigger
+        id: review
+      - condition: template
+        value_template: '{% set p = trigger.payload_json %}{{ p.after.camera == ''porch''
+          and ''bird'' in p.after.data.objects and (p.type == ''new'' or ''bird''
+          not in p.before.data.objects) }}'
+      sequence:
+      - action: counter.increment
+        target:
+          entity_id: counter.pigeon_visits_today
+  mode: queued
+- id: pigeon_scare_sound
+  alias: 'Pigeons: scare-off sound'
+  description: When a pigeon shows up during the allowed hours, play a quiet bird-of-prey
+    call. Repeats every minute while it stays, at most 3 times. Toggle, hours and
+    volume are on the dashboard.
+  triggers:
+  - trigger: mqtt
+    topic: frigate/reviews
+  conditions:
+  - condition: template
+    value_template: '{% set p = trigger.payload_json %}{{ p.after.camera == ''porch''
+      and ''bird'' in p.after.data.objects and (p.type == ''new'' or ''bird'' not
+      in p.before.data.objects) }}'
+  - condition: state
+    entity_id: input_boolean.pigeon_scare_sound
+    state: 'on'
+  - condition: time
+    after: input_datetime.pigeon_sound_from
+    before: input_datetime.pigeon_sound_until
+  actions:
+  - repeat:
+      sequence:
+      - action: script.play_pigeon_scare_sound
+      - delay:
+          seconds: 60
+      until:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: binary_sensor.porch_camera_pigeon
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.pigeon_scare_sound
+          state: 'off'
+        - condition: template
+          value_template: '{{ repeat.index >= 3 }}'
+  mode: single
+  max_exceeded: silent

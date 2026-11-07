@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "input_number",
+  "data": {
+    "items": [
+      {
+        "id": "pigeon_sound_volume",
+        "name": "Pigeon sound volume",
+        "min": 5.0,
+        "max": 100.0,
+        "step": 5.0,
+        "mode": "slider",
+        "unit_of_measurement": "%",
+        "icon": "mdi:volume-low",
+        "initial": 30.0
+      }
+    ]
+  }
+}

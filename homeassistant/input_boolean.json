@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "input_boolean",
+  "data": {
+    "items": [
+      {
+        "id": "remote_desktop_over_vpn",
+        "name": "Remote Desktop over VPN",
+        "icon": "mdi:remote-desktop"
+      },
+      {
+        "id": "pigeon_scare_sound",
+        "name": "Pigeon scare sound",
+        "icon": "mdi:bird"
+      }
+    ]
+  }
+}
