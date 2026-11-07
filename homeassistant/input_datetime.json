@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "input_datetime",
+  "data": {
+    "items": [
+      {
+        "id": "pigeon_sound_from",
+        "name": "Pigeon sound from",
+        "has_date": false,
+        "has_time": true,
+        "icon": "mdi:clock-start"
+      },
+      {
+        "id": "pigeon_sound_until",
+        "name": "Pigeon sound until",
+        "has_date": false,
+        "has_time": true,
+        "icon": "mdi:clock-end"
+      }
+    ]
+  }
+}

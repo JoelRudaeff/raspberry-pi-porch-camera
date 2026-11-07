@@ -13,6 +13,16 @@
         "minimum": 0,
         "restore": true,
         "maximum": null
+      },
+      {
+        "id": "pigeon_visits_today",
+        "name": "Pigeon visits today",
+        "icon": "mdi:bird",
+        "initial": 0,
+        "step": 1,
+        "restore": true,
+        "maximum": null,
+        "minimum": null
       }
     ]
   }

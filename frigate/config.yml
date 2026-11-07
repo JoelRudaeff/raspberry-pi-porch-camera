@@ -1,6 +1,6 @@
 # Frigate - porch camera (USB webcam on Raspberry Pi 5, Home Assistant OS)
 # Tuned for low power: 720p @ 10 fps capture, detection at 640x360 @ 5 fps on the CPU,
-# person-only tracking, recordings kept only around detections.
+# tracks people (alerts) and pigeons (detections), recordings kept only around them.
 
 # Local Mosquitto add-on; Home Assistant listens here for person alerts.
 # The password placeholder is filled in on the Pi from /addon_configs/ccab4aaf_frigate/.mqtt_password
@@ -54,13 +54,29 @@ cameras:
     objects:
       track:
         - person
-      # Webcam behind glass scores people lower than a real CCTV camera; Frigate's default
-      # threshold (0.7) missed real walk-bys. Lowered to 0.5 at the user's request:
-      # more sensitive, with a higher chance of false alerts.
+        - bird
       filters:
+        # Webcam behind glass scores people lower than a real CCTV camera; Frigate's default
+        # threshold (0.7) missed real walk-bys. Lowered to 0.5 at the user's request.
+        # Pigeons were being labelled "person" at 50-70% (461 false events in Oct-Nov 2026),
+        # almost all as small boxes, so a "person" must now cover at least 6000 px of the
+        # 640x360 detect frame (about 60x100 px). People on the balcony are far bigger.
         person:
           min_score: 0.45
           threshold: 0.5
+          min_area: 6000
+        # Pigeons (the model's label is "bird"). Lenient: the stock model scores birds low.
+        bird:
+          min_score: 0.4
+          threshold: 0.5
+    # People are alerts (iPhone notification); pigeons are detections (own timeline, no push).
+    review:
+      alerts:
+        labels:
+          - person
+      detections:
+        labels:
+          - bird
     # Snapshot sent over MQTT for the iPhone notification picture
     mqtt:
       enabled: true
@@ -72,6 +88,8 @@ cameras:
       enabled: true
       retain:
         default: 60
+        objects:
+          bird: 14
     record:
       enabled: true
       continuous:
@@ -83,8 +101,9 @@ cameras:
         post_capture: 10
         retain:
           days: 60
+      # Detections = pigeon clips; kept 2 weeks so a busy pigeon season can't fill the SSD.
       detections:
         retain:
-          days: 60
+          days: 14
 
 version: 0.18-0

@@ -21,7 +21,11 @@ server:
     iptables -A FORWARD -o %i -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT;
     iptables -A FORWARD -o %i -j DROP;
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-  # post_down: the same rules with -D instead of -A, in the same order
+  # post_down: the same rules with -D instead of -A, in the same order.
+  # If you use Remote Desktop over VPN (docs/remote-access.md, section 6), these two keys are
+  # rewritten by homeassistant/rdp_vpn/rdp_vpn.py; while it is on, it adds
+  #   -A FORWARD -i %i -d <PC_LAN_IP> -p tcp --dport 3389 -j ACCEPT   (and the same for udp)
+  # before the FORWARD DROP rule. Edit the script, not these options.
 peers:
   - name: phone
     addresses:

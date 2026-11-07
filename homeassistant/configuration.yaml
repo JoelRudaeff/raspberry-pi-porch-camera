@@ -9,3 +9,8 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+
+# Remote Desktop over the WireGuard VPN: opens/closes port 3389 to the PC in the VPN firewall.
+# Driven by input_boolean.remote_desktop_over_vpn via automation "Remote access: RDP over VPN".
+shell_command:
+  rdp_vpn: "python3 /config/rdp_vpn/rdp_vpn.py {{ state }}"
